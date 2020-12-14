@@ -56,7 +56,7 @@ public class TerrainChunkGenerator : MonoBehaviour
     private GameObject[] _nodes;
     private GameObject _nodeParent;
 
-    private Vector3[] _boundingBoxCorners;
+    [HideInInspector] public Vector3[] boundingBoxCorners;
     private Vector3[] _marchingCubeCorners;
 
     private NativeArray<float> _chunkHeightMap;
@@ -98,7 +98,7 @@ public class TerrainChunkGenerator : MonoBehaviour
         _nodes = new GameObject[totalNumNodes];
         
         // Configure bounding box and unit cube.
-        _boundingBoxCorners = new Vector3[8];
+        boundingBoxCorners = new Vector3[8];
         _marchingCubeCorners = new Vector3[8];
         ConstructMarchingCube();
     }
@@ -115,8 +115,6 @@ public class TerrainChunkGenerator : MonoBehaviour
             GenerateChunkMesh();
             ConstructChunkMesh();
             GenerateNodes();
-            
-            Debug.Log("Update");
         }
 
         // Update values that don't require regenerating the mesh.
@@ -131,11 +129,6 @@ public class TerrainChunkGenerator : MonoBehaviour
         _chunkHeightMap.Dispose();
         _chunkNumElements.Dispose();
         _chunkMeshVertices.Dispose();
-    }
-
-    private void OnPostRender()
-    {
-        // terrainDebugDraw.DrawBoundingBox();
     }
 
     private void GenerateChunkHeightMap()
@@ -341,14 +334,19 @@ public class TerrainChunkGenerator : MonoBehaviour
     private void UpdateBoundingBoxDimensions()
     {
         Vector3 chunkPosition = _chunk.transform.position;
-        _boundingBoxCorners[0] = new Vector3(chunkPosition.x - 0.5f, chunkPosition.y - 0.5f, chunkPosition.z - 0.5f);
-        _boundingBoxCorners[1] = new Vector3(chunkPosition.x + width + 0.5f, chunkPosition.y - 0.5f, chunkPosition.z - 0.5f);
-        _boundingBoxCorners[2] = new Vector3(chunkPosition.x + width + 0.5f, chunkPosition.y - 0.5f, chunkPosition.z + depth + 0.5f);
-        _boundingBoxCorners[3] = new Vector3(chunkPosition.x - 0.5f, chunkPosition.y - 0.5f, chunkPosition.z + depth + 0.5f);
+        boundingBoxCorners[0] = new Vector3(chunkPosition.x - 0.5f, chunkPosition.y - 0.5f, chunkPosition.z - 0.5f);
+        boundingBoxCorners[1] = new Vector3(chunkPosition.x + width - 1.0f, chunkPosition.y - 1.0f, chunkPosition.z - 0.5f);
+        boundingBoxCorners[2] = new Vector3(chunkPosition.x + width - 1.0f, chunkPosition.y - 1.0f, chunkPosition.z + depth - 1.0f);
+        boundingBoxCorners[3] = new Vector3(chunkPosition.x - 0.5f, chunkPosition.y - 0.5f, chunkPosition.z + depth - 1.0f);
 
-        _boundingBoxCorners[4] = new Vector3(chunkPosition.x - 0.5f, chunkPosition.y + height + 0.5f, chunkPosition.z - 0.5f);
-        _boundingBoxCorners[5] = new Vector3(chunkPosition.x + width + 0.5f, chunkPosition.y + height + 0.5f, chunkPosition.z - 0.5f);
-        _boundingBoxCorners[6] = new Vector3(chunkPosition.x + width + 0.5f, chunkPosition.y + height + 0.5f, chunkPosition.z + depth + 0.5f);
-        _boundingBoxCorners[7] = new Vector3(chunkPosition.x - 0.5f, chunkPosition.y + height + 0.5f, chunkPosition.z + depth + 0.5f);
+        boundingBoxCorners[4] = new Vector3(chunkPosition.x - 0.5f, chunkPosition.y + height - 1.0f, chunkPosition.z - 0.5f);
+        boundingBoxCorners[5] = new Vector3(chunkPosition.x + width - 1.0f, chunkPosition.y + height - 1.0f, chunkPosition.z - 0.5f);
+        boundingBoxCorners[6] = new Vector3(chunkPosition.x + width - 1.0f, chunkPosition.y + height - 1.0f, chunkPosition.z + depth - 1.0f);
+        boundingBoxCorners[7] = new Vector3(chunkPosition.x - 0.5f, chunkPosition.y + height - 1.0f, chunkPosition.z + depth - 1.0f);
+    }
+
+    private void DrawBoundingBox()
+    {
+        
     }
 }    
