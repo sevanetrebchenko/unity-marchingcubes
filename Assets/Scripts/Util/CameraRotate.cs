@@ -4,9 +4,10 @@ using UnityEngine;
 
 public class CameraRotate : MonoBehaviour
 {
+    public GameObject target;
     public float speed;
     void Update()
     {
-        transform.Rotate(0, speed * Time.deltaTime, 0);
+        transform.RotateAround(target.transform.position, Vector3.up, speed * Time.deltaTime);
     }
 }

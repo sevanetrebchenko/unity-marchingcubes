@@ -67,6 +67,8 @@ public class TerrainChunkGenerator : MonoBehaviour
     private MeshFilter _chunkMeshFilter;
     private MeshRenderer _chunkMeshRenderer;
 
+    private GameObject _cameraFocus;
+
     private void Start()
     {
         int totalNumNodes = width * height * depth;
@@ -79,7 +81,6 @@ public class TerrainChunkGenerator : MonoBehaviour
         _chunk = new GameObject();
         _chunk.transform.parent = transform;
         _chunk.name = "TerrainMesh";
-        _chunk.isStatic = true;
         
         _chunkMeshFilter = _chunk.AddComponent<MeshFilter>();
         _chunkMeshRenderer = _chunk.AddComponent<MeshRenderer>();
@@ -96,6 +97,10 @@ public class TerrainChunkGenerator : MonoBehaviour
         _nodeParent.isStatic = true;
         
         _nodes = new GameObject[totalNumNodes];
+        
+        _cameraFocus = GameObject.Find("CameraFocus");
+        _cameraFocus.transform.position = Vector3.zero;
+        _cameraFocus.isStatic = true;
         
         // Configure bounding box and unit cube.
         boundingBoxCorners = new Vector3[8];
@@ -288,6 +293,11 @@ public class TerrainChunkGenerator : MonoBehaviour
         _width = width;
         _height = height;
         _depth = depth;
+        
+        // Always center the chunk at 0, 0, 0
+        transform.position = new Vector3(-_width / 2.0f, -_height / 2.0f, -_depth / 2.0f);
+        _cameraFocus.transform.position = Vector3.zero;
+        _nodeParent.transform.position = new Vector3(-_width / 2.0f, -_height / 2.0f, -_depth / 2.0f);
 
         _chunkHeightMap.Dispose();
         _chunkHeightMap = new NativeArray<float>(width * height * depth, Allocator.Persistent);

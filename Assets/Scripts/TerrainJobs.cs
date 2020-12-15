@@ -1,7 +1,4 @@
-using System.Collections.Generic;
-using Unity.Burst;
 using Unity.Collections;
-using UnityEngine;
 using Unity.Jobs;
 using Unity.Mathematics;
 using Unity.Burst;
@@ -15,7 +12,7 @@ public struct ChunkHeightGenerationJob : IJob
     [ReadOnly] public float persistence;
     [ReadOnly] public float lacunarity;
     [ReadOnly] public float3 offset;
-    [ReadOnly] public Unity.Mathematics.Random seededGenerator;
+    [ReadOnly] public Random seededGenerator;
     
     [WriteOnly] public NativeArray<float> terrainHeightMap;
     
