@@ -6,12 +6,7 @@ using UnityEngine;
 public class BoundingBox : MonoBehaviour
 {
     public TerrainChunkGenerator terrainChunkGenerator;
-    private Material _material;
-
-    private void Start()
-    {
-        _material = new Material(Shader.Find("Diffuse"));
-    }
+    public Material material;
 
     private void OnPostRender()
     {
@@ -21,12 +16,17 @@ public class BoundingBox : MonoBehaviour
         }
     }
 
+    private void OnDrawGizmos()
+    {
+        DrawBoundingBox();
+    }
+
     private void DrawBoundingBox()
     {
         GL.Begin(GL.LINES);
         
-        _material.SetPass(0);
-        GL.Color(Color.gray);
+        GL.Color(material.color);
+        material.SetPass(0);
 
         // Bottom rectangle
         GL.Vertex(terrainChunkGenerator.boundingBoxCorners[0]);

@@ -5,6 +5,7 @@ using Unity.Collections;
 using Unity.Jobs;
 using UnityEngine;
 using Unity.Mathematics;
+using UnityEngine.Rendering;
 
 [System.Serializable]
 public class TerrainChunkGenerator : MonoBehaviour
@@ -12,13 +13,13 @@ public class TerrainChunkGenerator : MonoBehaviour
     public GameObject nodePrefab;
     
     // Mesh needs to be regenerated if these fields change.
-    [Range(1, 10)] public int width;
+    [Range(3, 10)] public int width;
     private int _width;
     
-    [Range(1, 10)] public int height;
+    [Range(3, 10)] public int height;
     private int _height;
     
-    [Range(1, 10)] public int depth;
+    [Range(3, 10)] public int depth;
     private int _depth;
     
     public uint terrainSeed;
@@ -92,9 +93,8 @@ public class TerrainChunkGenerator : MonoBehaviour
         // Debug
         // Configure parent to all debug nodes.
         _nodeParent = new GameObject();
-        _nodeParent.transform.parent = _chunk.transform;
+        _nodeParent.transform.parent = transform;
         _nodeParent.name = "NodeParent";
-        _nodeParent.isStatic = true;
         
         _nodes = new GameObject[totalNumNodes];
         
@@ -294,11 +294,8 @@ public class TerrainChunkGenerator : MonoBehaviour
         _height = height;
         _depth = depth;
         
-        // Always center the chunk at 0, 0, 0
-        transform.position = new Vector3(-_width / 2.0f, -_height / 2.0f, -_depth / 2.0f);
-        _cameraFocus.transform.position = Vector3.zero;
-        _nodeParent.transform.position = new Vector3(-_width / 2.0f, -_height / 2.0f, -_depth / 2.0f);
-
+        _cameraFocus.transform.position = new Vector3(_width / 2.0f, 2.0f, _depth / 2.0f);
+        
         _chunkHeightMap.Dispose();
         _chunkHeightMap = new NativeArray<float>(width * height * depth, Allocator.Persistent);
         _chunkMeshVertices.Dispose();
@@ -345,18 +342,13 @@ public class TerrainChunkGenerator : MonoBehaviour
     {
         Vector3 chunkPosition = _chunk.transform.position;
         boundingBoxCorners[0] = new Vector3(chunkPosition.x - 0.5f, chunkPosition.y - 0.5f, chunkPosition.z - 0.5f);
-        boundingBoxCorners[1] = new Vector3(chunkPosition.x + width - 1.0f, chunkPosition.y - 1.0f, chunkPosition.z - 0.5f);
-        boundingBoxCorners[2] = new Vector3(chunkPosition.x + width - 1.0f, chunkPosition.y - 1.0f, chunkPosition.z + depth - 1.0f);
-        boundingBoxCorners[3] = new Vector3(chunkPosition.x - 0.5f, chunkPosition.y - 0.5f, chunkPosition.z + depth - 1.0f);
-
-        boundingBoxCorners[4] = new Vector3(chunkPosition.x - 0.5f, chunkPosition.y + height - 1.0f, chunkPosition.z - 0.5f);
-        boundingBoxCorners[5] = new Vector3(chunkPosition.x + width - 1.0f, chunkPosition.y + height - 1.0f, chunkPosition.z - 0.5f);
-        boundingBoxCorners[6] = new Vector3(chunkPosition.x + width - 1.0f, chunkPosition.y + height - 1.0f, chunkPosition.z + depth - 1.0f);
-        boundingBoxCorners[7] = new Vector3(chunkPosition.x - 0.5f, chunkPosition.y + height - 1.0f, chunkPosition.z + depth - 1.0f);
-    }
-
-    private void DrawBoundingBox()
-    {
+        boundingBoxCorners[1] = new Vector3(chunkPosition.x + width - 0.5f, chunkPosition.y - 0.5f, chunkPosition.z - 0.5f);
+        boundingBoxCorners[2] = new Vector3(chunkPosition.x + width - 0.5f, chunkPosition.y - 0.5f, chunkPosition.z + depth - 0.5f);
+        boundingBoxCorners[3] = new Vector3(chunkPosition.x - 0.5f, chunkPosition.y - 0.5f, chunkPosition.z + depth - 0.5f);
         
+        boundingBoxCorners[4] = new Vector3(chunkPosition.x - 0.5f, chunkPosition.y + height - 0.5f, chunkPosition.z - 0.5f);
+        boundingBoxCorners[5] = new Vector3(chunkPosition.x + width - 0.5f, chunkPosition.y + height - 0.5f, chunkPosition.z - 0.5f);
+        boundingBoxCorners[6] = new Vector3(chunkPosition.x + width - 0.5f, chunkPosition.y + height - 0.5f, chunkPosition.z + depth - 0.5f);
+        boundingBoxCorners[7] = new Vector3(chunkPosition.x - 0.5f, chunkPosition.y + height - 0.5f, chunkPosition.z + depth - 0.5f);
     }
 }    
