@@ -10,18 +10,20 @@ public class BoundingBox : MonoBehaviour
 
     private void OnPostRender()
     {
+        // Draw bounding box for entire terrain chunk.
         if (terrainChunkGenerator.drawBoundingBox)
         {
-            DrawBoundingBox();
+            DrawCube(terrainChunkGenerator.boundingBoxCorners);
+        }
+
+        // Draw cube at the current position.
+        if (terrainChunkGenerator.animateCubeMarching && terrainChunkGenerator.drawMarchingCube)
+        {
+            DrawCube(terrainChunkGenerator.marchingCubeCorners);
         }
     }
 
-    private void OnDrawGizmos()
-    {
-        DrawBoundingBox();
-    }
-
-    private void DrawBoundingBox()
+    private void DrawCube(Vector3[] cubeCorners)
     {
         GL.Begin(GL.LINES);
         
@@ -29,43 +31,43 @@ public class BoundingBox : MonoBehaviour
         material.SetPass(0);
 
         // Bottom rectangle
-        GL.Vertex(terrainChunkGenerator.boundingBoxCorners[0]);
-        GL.Vertex(terrainChunkGenerator.boundingBoxCorners[1]);
+        GL.Vertex(cubeCorners[0]);
+        GL.Vertex(cubeCorners[1]);
 
-        GL.Vertex(terrainChunkGenerator.boundingBoxCorners[1]);
-        GL.Vertex(terrainChunkGenerator.boundingBoxCorners[2]);
+        GL.Vertex(cubeCorners[1]);
+        GL.Vertex(cubeCorners[2]);
         
-        GL.Vertex(terrainChunkGenerator.boundingBoxCorners[2]);
-        GL.Vertex(terrainChunkGenerator.boundingBoxCorners[3]);
+        GL.Vertex(cubeCorners[2]);
+        GL.Vertex(cubeCorners[3]);
         
-        GL.Vertex(terrainChunkGenerator.boundingBoxCorners[3]);
-        GL.Vertex(terrainChunkGenerator.boundingBoxCorners[0]);
+        GL.Vertex(cubeCorners[3]);
+        GL.Vertex(cubeCorners[0]);
         
         // Top rectangle
-        GL.Vertex(terrainChunkGenerator.boundingBoxCorners[4]);
-        GL.Vertex(terrainChunkGenerator.boundingBoxCorners[5]);
+        GL.Vertex(cubeCorners[4]);
+        GL.Vertex(cubeCorners[5]);
         
-        GL.Vertex(terrainChunkGenerator.boundingBoxCorners[5]);
-        GL.Vertex(terrainChunkGenerator.boundingBoxCorners[6]);
+        GL.Vertex(cubeCorners[5]);
+        GL.Vertex(cubeCorners[6]);
         
-        GL.Vertex(terrainChunkGenerator.boundingBoxCorners[6]);
-        GL.Vertex(terrainChunkGenerator.boundingBoxCorners[7]);
+        GL.Vertex(cubeCorners[6]);
+        GL.Vertex(cubeCorners[7]);
         
-        GL.Vertex(terrainChunkGenerator.boundingBoxCorners[7]);
-        GL.Vertex(terrainChunkGenerator.boundingBoxCorners[4]);
+        GL.Vertex(cubeCorners[7]);
+        GL.Vertex(cubeCorners[4]);
         
         // Connector sides
-        GL.Vertex(terrainChunkGenerator.boundingBoxCorners[0]);
-        GL.Vertex(terrainChunkGenerator.boundingBoxCorners[4]);
+        GL.Vertex(cubeCorners[0]);
+        GL.Vertex(cubeCorners[4]);
         
-        GL.Vertex(terrainChunkGenerator.boundingBoxCorners[1]);
-        GL.Vertex(terrainChunkGenerator.boundingBoxCorners[5]);
+        GL.Vertex(cubeCorners[1]);
+        GL.Vertex(cubeCorners[5]);
         
-        GL.Vertex(terrainChunkGenerator.boundingBoxCorners[2]);
-        GL.Vertex(terrainChunkGenerator.boundingBoxCorners[6]);
+        GL.Vertex(cubeCorners[2]);
+        GL.Vertex(cubeCorners[6]);
         
-        GL.Vertex(terrainChunkGenerator.boundingBoxCorners[3]);
-        GL.Vertex(terrainChunkGenerator.boundingBoxCorners[7]);
+        GL.Vertex(cubeCorners[3]);
+        GL.Vertex(cubeCorners[7]);
 
         GL.End();
     }

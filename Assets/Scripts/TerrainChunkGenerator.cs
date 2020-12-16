@@ -53,13 +53,26 @@ public class TerrainChunkGenerator : MonoBehaviour
     public enum NodePosition { All, InsideTerrain, None } // Position at which to show terrain nodes.
     public NodePosition nodePosition;
     private NodePosition _nodePosition;
-
+    
+    // Cube marching animation
+    public bool animateCubeMarching;
+    public bool drawMarchingCube;
+    [Range(0, 1)] public float cubeMarchInterval;
+    private float _cubeMarchInterval;
+    [HideInInspector] public bool generatingTerrain;
+    [HideInInspector] public bool pauseGeneration;
+    private int _currentMarchingCubeCounter;
+    
     private GameObject[] _nodes;
     private GameObject _nodeParent;
 
     [HideInInspector] public Vector3[] boundingBoxCorners;
+    [HideInInspector] public Vector3[] marchingCubeCorners;
     private Vector3[] _marchingCubeCorners;
 
+    private int _totalNumNodes;
+    private int _totalNumCubes;
+    
     private NativeArray<float> _chunkHeightMap;
     private NativeArray<int> _chunkNumElements;
     private NativeArray<float3> _chunkMeshVertices;
@@ -72,11 +85,12 @@ public class TerrainChunkGenerator : MonoBehaviour
 
     private void Start()
     {
-        int totalNumNodes = width * height * depth;
+        _totalNumNodes = (width + 2) * (height + 2) * (depth + 2);
+        _totalNumCubes = (width + 1) * (height + 1) * (depth + 1);
         
-        _chunkHeightMap = new NativeArray<float>(totalNumNodes, Allocator.Persistent);
+        _chunkHeightMap = new NativeArray<float>(_totalNumNodes, Allocator.Persistent);
         _chunkNumElements = new NativeArray<int>(1, Allocator.Persistent);
-        _chunkMeshVertices = new NativeArray<float3>(totalNumNodes * 15, Allocator.Persistent);
+        _chunkMeshVertices = new NativeArray<float3>(_totalNumCubes * 15, Allocator.Persistent);
 
         // Configure chunk game object.
         _chunk = new GameObject();
@@ -96,7 +110,7 @@ public class TerrainChunkGenerator : MonoBehaviour
         _nodeParent.transform.parent = transform;
         _nodeParent.name = "NodeParent";
         
-        _nodes = new GameObject[totalNumNodes];
+        _nodes = new GameObject[_totalNumNodes];
         
         _cameraFocus = GameObject.Find("CameraFocus");
         _cameraFocus.transform.position = Vector3.zero;
@@ -104,8 +118,14 @@ public class TerrainChunkGenerator : MonoBehaviour
         
         // Configure bounding box and unit cube.
         boundingBoxCorners = new Vector3[8];
+        marchingCubeCorners = new Vector3[8];
+        
+        // Marching cube animation
+        _currentMarchingCubeCounter = 0;
+        _cubeMarchInterval = cubeMarchInterval;
         _marchingCubeCorners = new Vector3[8];
         ConstructMarchingCube();
+        UpdateMarchingCubeCorners(new Vector3Int(0, 0, 0));
     }
 
     private void Update()
@@ -117,8 +137,6 @@ public class TerrainChunkGenerator : MonoBehaviour
             
             // Reconstruct terrain mesh.
             GenerateChunkHeightMap();
-            GenerateChunkMesh();
-            ConstructChunkMesh();
             GenerateNodes();
         }
 
@@ -126,6 +144,16 @@ public class TerrainChunkGenerator : MonoBehaviour
         if (UnimportantValuesChanged())
         {
             UpdateUnimportantValues();
+        }
+
+        if (animateCubeMarching)
+        {
+            MarchCube();
+        }
+        else
+        {
+            GenerateChunkMesh();
+            ConstructChunkMesh();
         }
     }
 
@@ -140,7 +168,7 @@ public class TerrainChunkGenerator : MonoBehaviour
     {
         ChunkHeightGenerationJob heightGenerationJob = new ChunkHeightGenerationJob
         {
-            numNodesPerAxis = new int3(width, height, depth),
+            numNodesPerAxis = new int3(width + 2, height + 2, depth + 2),
             numNoiseOctaves = numNoiseOctaves,
             noiseScale = noiseDensity,
             persistence = persistence,
@@ -154,7 +182,7 @@ public class TerrainChunkGenerator : MonoBehaviour
 
     private void GenerateChunkMesh()
     {
-        ChunkMeshGenerationJob meshGenerationJob = new ChunkMeshGenerationJob
+        ChunkMeshGenerationJob meshGenerationJob = new ChunkMeshGenerationJob()
         {
             cornerTable = MarchingCubes.cornerTable,
             edgeTable = MarchingCubes.edgeTable,
@@ -164,11 +192,19 @@ public class TerrainChunkGenerator : MonoBehaviour
             terrainHeightMap = _chunkHeightMap,
             terrainSurfaceLevel = surfaceLevel,
             terrainSmoothing = terrainSmoothing,
-            axisDimensionsInCubes = new int3(width - 1, height - 1, depth - 1),
-            numNodesPerAxis = new int3(width, height, depth),
-            numCubes = (width - 1) * (height - 1) * (depth - 1),
+            axisDimensionsInCubes = new int3(width + 1, height + 1, depth + 1),
+            numNodesPerAxis = new int3(width + 2, height + 2, depth + 2)
         };
-
+        
+        if (animateCubeMarching)
+        {
+            meshGenerationJob.numCubes = _currentMarchingCubeCounter;
+        }
+        else
+        {
+            meshGenerationJob.numCubes = _totalNumCubes;
+        }
+        
         meshGenerationJob.Schedule().Complete();
     }
 
@@ -180,14 +216,14 @@ public class TerrainChunkGenerator : MonoBehaviour
             Destroy(_nodes[i]);
         }
         
-        _nodes = new GameObject[width * height * depth];
-         for (int x = 0; x < width; ++x)
-         {
-             for (int z = 0; z < depth; ++z)
-             {
-                 for (int y = 0; y < height; ++y)
-                 {
-                     int index = x + z * width + y * width * depth;
+        _nodes = new GameObject[_totalNumNodes];
+        for (int y = 0; y < height + 2; ++y)
+        {
+            for (int x = 0; x < width + 2; ++x)
+            {
+                for (int z = 0; z < depth + 2; ++z)
+                {
+                    int index = x + z * (width + 2) + y * (width + 2) * (depth + 2);
                      float noiseValue = _chunkHeightMap[index];
                      GameObject node = Instantiate(nodePrefab, new Vector3(x, y, z), Quaternion.identity, _nodeParent.transform);
                      MeshRenderer nodeMeshRenderer = node.GetComponent<MeshRenderer>();
@@ -203,22 +239,22 @@ public class TerrainChunkGenerator : MonoBehaviour
                      }
 
                      _nodes[index] = node;
-                 }
-             }
-         }
+                }
+            }
+        }
 
-         UpdateNodes();
+        UpdateNodes();
     }
 
     private void UpdateNodes()
     {
-        for (int x = 0; x < width; ++x)
+        for (int y = 0; y < height + 2; ++y)
         {
-            for (int z = 0; z < depth; ++z)
+            for (int x = 0; x < width + 2; ++x)
             {
-                for (int y = 0; y < height; ++y)
+                for (int z = 0; z < depth + 2; ++z)
                 {
-                    int index = x + z * width + y * width * depth;
+                    int index = x + z * (width + 2) + y * (width + 2) * (depth + 2);
                     float noiseValue = _chunkHeightMap[index];
                     GameObject node = _nodes[index];
 
@@ -293,13 +329,16 @@ public class TerrainChunkGenerator : MonoBehaviour
         _width = width;
         _height = height;
         _depth = depth;
-        
-        _cameraFocus.transform.position = new Vector3(_width / 2.0f, 2.0f, _depth / 2.0f);
+
+        _totalNumNodes = (width + 2) * (height + 2) * (depth + 2);
+        _totalNumCubes = (width + 1) * (height + 1) * (depth + 1);
+
+        _cameraFocus.transform.position = new Vector3((_width + 2.0f) / 2.0f, 2.0f, (_depth + 2.0f) / 2.0f);
         
         _chunkHeightMap.Dispose();
-        _chunkHeightMap = new NativeArray<float>(width * height * depth, Allocator.Persistent);
+        _chunkHeightMap = new NativeArray<float>(_totalNumNodes, Allocator.Persistent);
         _chunkMeshVertices.Dispose();
-        _chunkMeshVertices = new NativeArray<float3>(width * height * depth * 15, Allocator.Persistent);
+        _chunkMeshVertices = new NativeArray<float3>(_totalNumNodes * 15, Allocator.Persistent);
         
         _terrainSeed = terrainSeed;
         _surfaceLevel = surfaceLevel;
@@ -310,6 +349,7 @@ public class TerrainChunkGenerator : MonoBehaviour
         _terrainSmoothing = terrainSmoothing;
 
         UpdateBoundingBoxDimensions();
+        ResetMarchingCubes();
     }
 
     private bool UnimportantValuesChanged()
@@ -326,29 +366,112 @@ public class TerrainChunkGenerator : MonoBehaviour
         UpdateNodes();
     }
 
-    private void ConstructMarchingCube()
+    private void MarchCube()
     {
-        _marchingCubeCorners[0] = new Vector3(0, 0, 0);
-        _marchingCubeCorners[1] = new Vector3(1, 0, 0);
-        _marchingCubeCorners[2] = new Vector3(0, 0, 1);
-        _marchingCubeCorners[3] = new Vector3(1, 0, 1);
-        _marchingCubeCorners[4] = new Vector3(0, 1, 0);
-        _marchingCubeCorners[5] = new Vector3(1, 1, 0);
-        _marchingCubeCorners[6] = new Vector3(0, 1, 1);
-        _marchingCubeCorners[7] = new Vector3(1, 1, 1);
+        if (_currentMarchingCubeCounter >= _totalNumCubes)
+        {
+            drawMarchingCube = false;
+            ToggleMarchingCubesPaused(true);
+        }
+        
+        if (!pauseGeneration)
+        {
+            _cubeMarchInterval -= Time.deltaTime;
+            if (_cubeMarchInterval < 0.0f)
+            {
+                // Reset interval.
+                _cubeMarchInterval = cubeMarchInterval;
+                UpdateMarchingCubeCorners(PositionFromIndex(++_currentMarchingCubeCounter));
+                
+                // Generate mesh.
+                GenerateChunkMesh();
+                ConstructChunkMesh();
+            }
+        }
+    }
+
+    private Vector3Int PositionFromIndex(int index)
+    {
+        return new Vector3Int((index / ((_depth + 2) - 1)) % ((_width + 2) - 1), index / (((_width + 2) - 1) * ((_depth + 2) - 1)) , index % (
+            (_depth + 2) - 1));
+    }
+
+    private void UpdateMarchingCubeCorners(Vector3Int normalizedCubePosition)
+    {
+        for (int i = 0; i < 8; ++i)
+        {
+            marchingCubeCorners[i] = _marchingCubeCorners[i] + normalizedCubePosition;
+        }
+    }
+
+    public void StartMarchingCubes()
+    {
+        if (!generatingTerrain)
+        {
+            ToggleMarchingCubesPaused(false);
+            ResetMarchingCubes();
+            
+            generatingTerrain = true;
+            GenerateChunkMesh();
+            ConstructChunkMesh();
+        }
+    }
+
+    public void ToggleMarchingCubesPaused(bool pause)
+    {
+        pauseGeneration = pause;
+    }
+
+    public void StepMarchingCubes(bool forward)
+    {
+        if (pauseGeneration)
+        {
+            if (forward)
+            {
+                ++_currentMarchingCubeCounter;
+            }
+            else
+            {
+                --_currentMarchingCubeCounter;
+                _currentMarchingCubeCounter = Math.Max(0, _currentMarchingCubeCounter);
+            }
+            
+            UpdateMarchingCubeCorners(PositionFromIndex(_currentMarchingCubeCounter));
+            GenerateChunkMesh();
+            ConstructChunkMesh();
+        }
+    }
+
+    public void ResetMarchingCubes()
+    {
+        _chunkMeshFilter.mesh.Clear();
+        generatingTerrain = false;
+        _currentMarchingCubeCounter = 0;
     }
     
     private void UpdateBoundingBoxDimensions()
     {
         Vector3 chunkPosition = _chunk.transform.position;
         boundingBoxCorners[0] = new Vector3(chunkPosition.x - 0.5f, chunkPosition.y - 0.5f, chunkPosition.z - 0.5f);
-        boundingBoxCorners[1] = new Vector3(chunkPosition.x + width - 0.5f, chunkPosition.y - 0.5f, chunkPosition.z - 0.5f);
-        boundingBoxCorners[2] = new Vector3(chunkPosition.x + width - 0.5f, chunkPosition.y - 0.5f, chunkPosition.z + depth - 0.5f);
-        boundingBoxCorners[3] = new Vector3(chunkPosition.x - 0.5f, chunkPosition.y - 0.5f, chunkPosition.z + depth - 0.5f);
+        boundingBoxCorners[1] = new Vector3(chunkPosition.x + width + 2 - 0.5f, chunkPosition.y - 0.5f, chunkPosition.z - 0.5f);
+        boundingBoxCorners[2] = new Vector3(chunkPosition.x + width + 2 - 0.5f, chunkPosition.y - 0.5f, chunkPosition.z + depth + 2 - 0.5f);
+        boundingBoxCorners[3] = new Vector3(chunkPosition.x - 0.5f, chunkPosition.y - 0.5f, chunkPosition.z + depth + 2 - 0.5f);
         
-        boundingBoxCorners[4] = new Vector3(chunkPosition.x - 0.5f, chunkPosition.y + height - 0.5f, chunkPosition.z - 0.5f);
-        boundingBoxCorners[5] = new Vector3(chunkPosition.x + width - 0.5f, chunkPosition.y + height - 0.5f, chunkPosition.z - 0.5f);
-        boundingBoxCorners[6] = new Vector3(chunkPosition.x + width - 0.5f, chunkPosition.y + height - 0.5f, chunkPosition.z + depth - 0.5f);
-        boundingBoxCorners[7] = new Vector3(chunkPosition.x - 0.5f, chunkPosition.y + height - 0.5f, chunkPosition.z + depth - 0.5f);
+        boundingBoxCorners[4] = new Vector3(chunkPosition.x - 0.5f, chunkPosition.y + height + 2 - 0.5f, chunkPosition.z - 0.5f);
+        boundingBoxCorners[5] = new Vector3(chunkPosition.x + width + 2 - 0.5f, chunkPosition.y + height + 2 - 0.5f, chunkPosition.z - 0.5f);
+        boundingBoxCorners[6] = new Vector3(chunkPosition.x + width + 2 - 0.5f, chunkPosition.y + height + 2 - 0.5f, chunkPosition.z + depth + 2 - 0.5f);
+        boundingBoxCorners[7] = new Vector3(chunkPosition.x - 0.5f, chunkPosition.y + height + 2 - 0.5f, chunkPosition.z + depth + 2 - 0.5f);
+    }
+    
+    private void ConstructMarchingCube()
+    {
+        _marchingCubeCorners[0] = new Vector3(0, 0, 0);
+        _marchingCubeCorners[1] = new Vector3(1, 0, 0);
+        _marchingCubeCorners[2] = new Vector3(1, 0, 1);
+        _marchingCubeCorners[3] = new Vector3(0, 0, 1);
+        _marchingCubeCorners[4] = new Vector3(0, 1, 0);
+        _marchingCubeCorners[5] = new Vector3(1, 1, 0);
+        _marchingCubeCorners[6] = new Vector3(1, 1, 1);
+        _marchingCubeCorners[7] = new Vector3(0, 1, 1);
     }
 }    

@@ -37,30 +37,38 @@ public struct ChunkHeightGenerationJob : IJob
         }
         
         // Generate perlin noise values in the map.
-        for (int x = 0; x < numNodesPerAxis.x; ++x)
+        for (int y = 0; y < numNodesPerAxis.y; ++y)
         {
-            for (int z = 0; z < numNodesPerAxis.z; ++z)
+            for (int x = 0; x < numNodesPerAxis.x; ++x)
             {
-                for (int y = 0; y < numNodesPerAxis.y; ++y)
+                for (int z = 0; z < numNodesPerAxis.z; ++z)
                 {
                     int index = ExpandIndex(x, y, z);
                     float noiseHeight = 0.0f;
-                    
-                    float amplitude = 1.0f;
-                    float frequency = 1.0f;
 
-                    for (int i = 0; i < numNoiseOctaves; ++i)
+                    if (x == 0 || x == numNodesPerAxis.x - 1 || y == 0 || y == numNodesPerAxis.y - 1 || z == 0 ||
+                        z == numNodesPerAxis.z - 1)
                     {
-                        float sampleX = (x + octaveOffsets[i].x) / noiseScale * frequency;
-                        float sampleY = (y + octaveOffsets[i].y) / noiseScale * frequency;
-                        float sampleZ = (z + octaveOffsets[i].z) / noiseScale * frequency;
+                        noiseHeight = 1.0f;
+                    }
+                    else
+                    {
+                        float amplitude = 1.0f;
+                        float frequency = 1.0f;
 
-                        // Get perlin values from -1 to 1
-                        float current = noise.cnoise(new float3(sampleX, sampleY, sampleZ));// - 0.5f) * 2.0f;
-                        noiseHeight += current * amplitude;
+                        for (int i = 0; i < numNoiseOctaves; ++i)
+                        {
+                            float sampleX = (x + octaveOffsets[i].x) / noiseScale * frequency;
+                            float sampleY = (y + octaveOffsets[i].y) / noiseScale * frequency;
+                            float sampleZ = (z + octaveOffsets[i].z) / noiseScale * frequency;
 
-                        amplitude *= persistence; // Persistence should be between 0 and 1 - amplitude decreases with each octave.
-                        frequency *= lacunarity;  // Lacunarity should be greater than 1 - frequency increases with each octave.
+                            // Get perlin values from -1 to 1
+                            float current = noise.cnoise(new float3(sampleX, sampleY, sampleZ));// - 0.5f) * 2.0f;
+                            noiseHeight += current * amplitude;
+
+                            amplitude *= persistence; // Persistence should be between 0 and 1 - amplitude decreases with each octave.
+                            frequency *= lacunarity;  // Lacunarity should be greater than 1 - frequency increases with each octave.
+                        }
                     }
                     
                     terrainHeightMap[index] = noiseHeight;
@@ -101,11 +109,11 @@ public struct ChunkMeshGenerationJob : IJob
         int vertexIndex = 0;
         int cubeIndex = 0;
         
-        for (int x = 0; x < axisDimensionsInCubes.x; ++x)
+        for (int y = 0; y < axisDimensionsInCubes.y; ++y)
         {
-            for (int z = 0; z < axisDimensionsInCubes.z; ++z)
+            for (int x = 0; x < axisDimensionsInCubes.x; ++x)
             {
-                for (int y = 0; y < axisDimensionsInCubes.y; ++y)
+                for (int z = 0; z < axisDimensionsInCubes.z; ++z)
                 {
                     if (cubeIndex > numCubes)
                     {
@@ -128,6 +136,7 @@ public struct ChunkMeshGenerationJob : IJob
 
                     if (configuration == 0 || configuration == 255)
                     {
+                        ++cubeIndex;
                         continue;
                     }
 
@@ -160,16 +169,24 @@ public struct ChunkMeshGenerationJob : IJob
 
                             // Calculate vertex position.
                             float3 vertexPosition;
-                            
+
+                            // Do not interpolate the outside edges.
+                            // if (x == 0 || x == axisDimensionsInCubes.x - 1 || y == 0 || y == axisDimensionsInCubes.y - 1 || z == 0 || z == axisDimensionsInCubes.z - 1)
+                            // {
+                            //     vertexPosition = (edgeVertex1 + edgeVertex2) / 2.0f;
+                            // }
+                            // else
+                            // {
                             if (terrainSmoothing) {
                                 float edgeVertex1Noise = cubeCornerValues[edgeTable[edgeVertex1Index]];
                                 float edgeVertex2Noise = cubeCornerValues[edgeTable[edgeVertex2Index]];
-                            
+                        
                                 vertexPosition = Interpolate(edgeVertex1, edgeVertex1Noise, edgeVertex2, edgeVertex2Noise);
                             }
                             else {
                                 vertexPosition = (edgeVertex1 + edgeVertex2) / 2.0f;
                             }
+                            // }
 
                             vertices[vertexIndex++] = vertexPosition;
                             ++edgeIndex;
