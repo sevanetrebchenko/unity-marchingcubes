@@ -40,19 +40,14 @@ public class TerrainChunkGenerator : MonoBehaviour
     [Range(1, 2)] public float lacunarity;
     private float _lacunarity;
     
-    public bool terrainSmoothing;
-    private bool _terrainSmoothing;
-    
     // Mesh does not need to be regenerated if these fields change.
     public Color terrainColor;
     private Color _terrainColor;
     
     // Debug draw portion
+    public bool drawTerrainNodes;
+    private bool _drawNodes;
     public bool drawBoundingBox;
-    
-    public enum NodePosition { All, InsideTerrain, None } // Position at which to show terrain nodes.
-    public NodePosition nodePosition;
-    private NodePosition _nodePosition;
     
     // Cube marching animation
     public bool animateCubeMarching;
@@ -83,6 +78,37 @@ public class TerrainChunkGenerator : MonoBehaviour
 
     private GameObject _cameraFocus;
 
+    public void ToggleDrawTerrainNodes(bool drawTerrainNodes)
+    {
+        this.drawTerrainNodes = drawTerrainNodes;
+    }
+    
+    public void ToggleDrawBoundingBox(bool drawBoundingBox)
+    {
+        this.drawBoundingBox = drawBoundingBox;
+    }  
+    
+    public void ToggleDrawMarchingCube(bool drawMarchingCube)
+    {
+        this.drawMarchingCube = drawMarchingCube;
+    }
+
+    public void UpdateWidth(int width)
+    {
+        this.width = width;
+    }
+    
+    public void UpdateHeight(int height)
+    {
+        this.height = height;
+    }
+    
+    public void UpdateDepth(int depth)
+    {
+        this.depth = depth;
+    }
+    
+    
     private void Start()
     {
         _totalNumNodes = (width + 2) * (height + 2) * (depth + 2);
@@ -111,6 +137,7 @@ public class TerrainChunkGenerator : MonoBehaviour
         _nodeParent.name = "NodeParent";
         
         _nodes = new GameObject[_totalNumNodes];
+        _drawNodes = drawTerrainNodes;
         
         _cameraFocus = GameObject.Find("CameraFocus");
         _cameraFocus.transform.position = Vector3.zero;
@@ -126,6 +153,7 @@ public class TerrainChunkGenerator : MonoBehaviour
         _marchingCubeCorners = new Vector3[8];
         ConstructMarchingCube();
         UpdateMarchingCubeCorners(new Vector3Int(0, 0, 0));
+        ToggleMarchingCubesPaused(true);
     }
 
     private void Update()
@@ -191,9 +219,8 @@ public class TerrainChunkGenerator : MonoBehaviour
             numElements = _chunkNumElements,
             terrainHeightMap = _chunkHeightMap,
             terrainSurfaceLevel = surfaceLevel,
-            terrainSmoothing = terrainSmoothing,
             axisDimensionsInCubes = new int3(width + 1, height + 1, depth + 1),
-            numNodesPerAxis = new int3(width + 2, height + 2, depth + 2)
+            numNodesPerAxis = new int3(width + 2, height + 2, depth + 2),
         };
         
         if (animateCubeMarching)
@@ -217,6 +244,7 @@ public class TerrainChunkGenerator : MonoBehaviour
         }
         
         _nodes = new GameObject[_totalNumNodes];
+        
         for (int y = 0; y < height + 2; ++y)
         {
             for (int x = 0; x < width + 2; ++x)
@@ -255,29 +283,7 @@ public class TerrainChunkGenerator : MonoBehaviour
                 for (int z = 0; z < depth + 2; ++z)
                 {
                     int index = x + z * (width + 2) + y * (width + 2) * (depth + 2);
-                    float noiseValue = _chunkHeightMap[index];
-                    GameObject node = _nodes[index];
-
-                    switch (nodePosition)
-                    {
-                        case NodePosition.All:
-                            node.SetActive(true);
-                            break;
-                        case NodePosition.InsideTerrain:
-                            if (noiseValue > surfaceLevel)
-                            {
-                                node.SetActive(false);
-                            }
-                            else
-                            {
-                                node.SetActive(true);
-                            }
-
-                            break;
-                        case NodePosition.None:
-                            node.SetActive(false);
-                            break;
-                    }
+                    _nodes[index].SetActive(drawTerrainNodes);
                 }
             }
         }
@@ -318,9 +324,7 @@ public class TerrainChunkGenerator : MonoBehaviour
                _noiseDensity != noiseDensity ||
                _numNoiseOctaves != numNoiseOctaves ||
                _persistence != persistence ||
-               _lacunarity != lacunarity ||
-               _terrainSmoothing != terrainSmoothing;
-
+               _lacunarity != lacunarity;
     }
 
     private void UpdateImportantValues()
@@ -333,7 +337,7 @@ public class TerrainChunkGenerator : MonoBehaviour
         _totalNumNodes = (width + 2) * (height + 2) * (depth + 2);
         _totalNumCubes = (width + 1) * (height + 1) * (depth + 1);
 
-        _cameraFocus.transform.position = new Vector3((_width + 2.0f) / 2.0f, 2.0f, (_depth + 2.0f) / 2.0f);
+        _cameraFocus.transform.position = new Vector3((_width + 2.0f) / 2.0f, (_height + 2.0f) / 4.0f, (_depth + 2.0f) / 2.0f);
         
         _chunkHeightMap.Dispose();
         _chunkHeightMap = new NativeArray<float>(_totalNumNodes, Allocator.Persistent);
@@ -346,7 +350,6 @@ public class TerrainChunkGenerator : MonoBehaviour
         _numNoiseOctaves = numNoiseOctaves;
         _persistence = persistence;
         _lacunarity = lacunarity;
-        _terrainSmoothing = terrainSmoothing;
 
         UpdateBoundingBoxDimensions();
         ResetMarchingCubes();
@@ -354,13 +357,13 @@ public class TerrainChunkGenerator : MonoBehaviour
 
     private bool UnimportantValuesChanged()
     {
-        return _nodePosition != nodePosition ||
+        return _drawNodes != drawTerrainNodes ||
                _terrainColor != terrainColor;
     }
 
     private void UpdateUnimportantValues()
     {
-        _nodePosition = nodePosition;
+        _drawNodes = drawTerrainNodes;
         _terrainColor = terrainColor;
         _chunkMeshRenderer.material.color = terrainColor;
         UpdateNodes();
@@ -368,9 +371,10 @@ public class TerrainChunkGenerator : MonoBehaviour
 
     private void MarchCube()
     {
+        // Reset the cube marching if it has finished marching the entire chunk.
         if (_currentMarchingCubeCounter >= _totalNumCubes)
         {
-            drawMarchingCube = false;
+            _currentMarchingCubeCounter = 0;
             ToggleMarchingCubesPaused(true);
         }
         

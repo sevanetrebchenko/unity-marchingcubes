@@ -94,7 +94,6 @@ public struct ChunkMeshGenerationJob : IJob
     [ReadOnly] public NativeArray<int> triangleTable;
     [ReadOnly] public NativeArray<float> terrainHeightMap;
     [ReadOnly] public float terrainSurfaceLevel;
-    [ReadOnly] public bool terrainSmoothing;
     [ReadOnly] public int3 axisDimensionsInCubes;
     [ReadOnly] public int3 numNodesPerAxis;
     [ReadOnly] public int numCubes;
@@ -168,27 +167,7 @@ public struct ChunkMeshGenerationJob : IJob
                             float3 edgeVertex2 = normalizedCubePosition + corner2;
 
                             // Calculate vertex position.
-                            float3 vertexPosition;
-
-                            // Do not interpolate the outside edges.
-                            // if (x == 0 || x == axisDimensionsInCubes.x - 1 || y == 0 || y == axisDimensionsInCubes.y - 1 || z == 0 || z == axisDimensionsInCubes.z - 1)
-                            // {
-                            //     vertexPosition = (edgeVertex1 + edgeVertex2) / 2.0f;
-                            // }
-                            // else
-                            // {
-                            if (terrainSmoothing) {
-                                float edgeVertex1Noise = cubeCornerValues[edgeTable[edgeVertex1Index]];
-                                float edgeVertex2Noise = cubeCornerValues[edgeTable[edgeVertex2Index]];
-                        
-                                vertexPosition = Interpolate(edgeVertex1, edgeVertex1Noise, edgeVertex2, edgeVertex2Noise);
-                            }
-                            else {
-                                vertexPosition = (edgeVertex1 + edgeVertex2) / 2.0f;
-                            }
-                            // }
-
-                            vertices[vertexIndex++] = vertexPosition;
+                            vertices[vertexIndex++] = (edgeVertex1 + edgeVertex2) / 2.0f;
                             ++edgeIndex;
                         }
                     }
