@@ -92,7 +92,7 @@ public class TerrainChunkGenerator : MonoBehaviour
     {
         this.drawMarchingCube = drawMarchingCube;
     }
-
+    
     private void Start()
     {
         _totalNumNodes = (width + 2) * (height + 2) * (depth + 2);
