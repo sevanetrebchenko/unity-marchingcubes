@@ -10,6 +10,7 @@ public class UpdateWidth : MonoBehaviour
     private void Start()
     {
         _slider = GetComponent<Slider>();
+        _slider.value = terrainChunkGenerator.width;
         _value = _slider.value;
     }
 

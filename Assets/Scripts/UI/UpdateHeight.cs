@@ -10,6 +10,7 @@ public class UpdateHeight : MonoBehaviour
     private void Start()
     {
         _slider = GetComponent<Slider>();
+        _slider.value = terrainChunkGenerator.height;
         _value = _slider.value;
     }
 

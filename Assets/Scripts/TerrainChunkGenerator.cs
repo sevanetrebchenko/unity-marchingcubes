@@ -93,22 +93,6 @@ public class TerrainChunkGenerator : MonoBehaviour
         this.drawMarchingCube = drawMarchingCube;
     }
 
-    public void UpdateWidth(int width)
-    {
-        this.width = width;
-    }
-    
-    public void UpdateHeight(int height)
-    {
-        this.height = height;
-    }
-    
-    public void UpdateDepth(int depth)
-    {
-        this.depth = depth;
-    }
-    
-    
     private void Start()
     {
         _totalNumNodes = (width + 2) * (height + 2) * (depth + 2);
@@ -337,7 +321,7 @@ public class TerrainChunkGenerator : MonoBehaviour
         _totalNumNodes = (width + 2) * (height + 2) * (depth + 2);
         _totalNumCubes = (width + 1) * (height + 1) * (depth + 1);
 
-        _cameraFocus.transform.position = new Vector3((_width + 2.0f) / 2.0f, (_height + 2.0f) / 4.0f, (_depth + 2.0f) / 2.0f);
+        _cameraFocus.transform.position = new Vector3((_width + 1) / 2.0f, (_height + 1) / 4.0f, (_depth + 1) / 2.0f);
         
         _chunkHeightMap.Dispose();
         _chunkHeightMap = new NativeArray<float>(_totalNumNodes, Allocator.Persistent);
@@ -396,8 +380,7 @@ public class TerrainChunkGenerator : MonoBehaviour
 
     private Vector3Int PositionFromIndex(int index)
     {
-        return new Vector3Int((index / ((_depth + 2) - 1)) % ((_width + 2) - 1), index / (((_width + 2) - 1) * ((_depth + 2) - 1)) , index % (
-            (_depth + 2) - 1));
+        return new Vector3Int((index / ((_depth + 2) - 1)) % ((_width + 2) - 1), index / (((_width + 2) - 1) * ((_depth + 2) - 1)) , index % ((_depth + 2) - 1));
     }
 
     private void UpdateMarchingCubeCorners(Vector3Int normalizedCubePosition)

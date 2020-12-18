@@ -10,6 +10,7 @@ public class UpdateDepth : MonoBehaviour
     private void Start()
     {
         _slider = GetComponent<Slider>();
+        _slider.value = terrainChunkGenerator.depth;
         _value = _slider.value;
     }
 

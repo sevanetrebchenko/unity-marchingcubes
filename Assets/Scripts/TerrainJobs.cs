@@ -140,7 +140,6 @@ public struct ChunkMeshGenerationJob : IJob
                     }
 
                     int edgeIndex = 0;
-                    bool breakOut = false;
                     
                     // A configuration has maximum 5 triangles in it.
                     for (int i = 0; i < 5; ++i) {
