@@ -5,7 +5,8 @@ using UnityEngine;
 public class CameraLookAt : MonoBehaviour
 {
     public Transform target;
-    void Update()
+    
+    private void Update()
     {
         transform.LookAt(target);
     }

@@ -4334,6 +4334,7 @@ GameObject:
   - component: {fileID: 963194229}
   - component: {fileID: 963194230}
   - component: {fileID: 963194231}
+  - component: {fileID: 963194232}
   m_Layer: 0
   m_Name: Camera
   m_TagString: MainCamera
@@ -4447,6 +4448,20 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   target: {fileID: 895095920}
   speed: 10
+--- !u!114 &963194232
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 963194225}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3852b5cb7e2cb424db2e96a8c0d8da37, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  terrainChunkGenerator: {fileID: 1523594767}
+  target: {fileID: 895095921}
 --- !u!1 &969793096
 GameObject:
   m_ObjectHideFlags: 0
@@ -6070,12 +6085,12 @@ MonoBehaviour:
   width: 8
   height: 8
   depth: 8
-  terrainSeed: 57291
-  surfaceLevel: 0
+  terrainSeed: 43983
+  surfaceLevel: -0.084
   noiseDensity: 8.74
-  numNoiseOctaves: 3
-  persistence: 0.274
-  lacunarity: 1.252
+  numNoiseOctaves: 2
+  persistence: 0.071
+  lacunarity: 1.21
   terrainColor: {r: 0.4716981, g: 0.20247419, b: 0.4239864, a: 0}
   drawTerrainNodes: 1
   drawBoundingBox: 1

@@ -153,9 +153,20 @@ public class TerrainChunkGenerator : MonoBehaviour
 
     private void OnDestroy()
     {
-        _chunkHeightMap.Dispose();
-        _chunkNumElements.Dispose();
-        _chunkMeshVertices.Dispose();
+        if (_chunkHeightMap.IsCreated)
+        {
+            _chunkHeightMap.Dispose();
+        }
+
+        if (_chunkNumElements.IsCreated)
+        {
+            _chunkNumElements.Dispose();
+        }
+
+        if (_chunkMeshVertices.IsCreated)
+        {
+            _chunkMeshVertices.Dispose();
+        }
     }
 
     private void GenerateChunkHeightMap()
@@ -303,7 +314,7 @@ public class TerrainChunkGenerator : MonoBehaviour
         _totalNumNodes = (width + 2) * (height + 2) * (depth + 2);
         _totalNumCubes = (width + 1) * (height + 1) * (depth + 1);
 
-        _cameraFocus.transform.position = new Vector3((_width + 1) / 2.0f, (_height + 1) / 4.0f, (_depth + 1) / 2.0f);
+        _cameraFocus.transform.position = new Vector3((_width + 1) / 2.0f, (_height + 1) / 2.0f, (_depth + 1) / 2.0f);
         
         _chunkHeightMap.Dispose();
         _chunkHeightMap = new NativeArray<float>(_totalNumNodes, Allocator.Persistent);
@@ -338,7 +349,7 @@ public class TerrainChunkGenerator : MonoBehaviour
     private void MarchCube()
     {
         // Reset the cube marching if it has finished marching the entire chunk.
-        if (_currentMarchingCubeCounter >= _totalNumCubes)
+        if (_currentMarchingCubeCounter > _totalNumCubes - 1)
         {
             // Reset the cube position back to 0.
             _currentMarchingCubeCounter = 0;
