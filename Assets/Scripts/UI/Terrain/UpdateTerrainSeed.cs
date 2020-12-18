@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 
-public class UpdateHeight : MonoBehaviour
+public class UpdateTerrainSeed : MonoBehaviour
 {
     public TerrainChunkGenerator terrainChunkGenerator;
     private Slider _slider;
@@ -9,12 +9,12 @@ public class UpdateHeight : MonoBehaviour
     private void Start()
     {
         _slider = GetComponent<Slider>();
-        _slider.value = terrainChunkGenerator.height; // Set initial value.
+        _slider.value = terrainChunkGenerator.terrainSeed; // Set initial value.
         _slider.onValueChanged.AddListener(OnClick);
     }
 
     private void OnClick(float sliderValue)
     {
-        terrainChunkGenerator.height = (int)sliderValue;
+        terrainChunkGenerator.terrainSeed = (uint)sliderValue;
     }
 }

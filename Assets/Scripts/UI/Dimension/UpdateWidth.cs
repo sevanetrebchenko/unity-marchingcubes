@@ -5,22 +5,16 @@ public class UpdateWidth : MonoBehaviour
 {
     public TerrainChunkGenerator terrainChunkGenerator;
     private Slider _slider;
-    private float _value;
     
     private void Start()
     {
         _slider = GetComponent<Slider>();
-        _slider.value = terrainChunkGenerator.width;
-        _value = _slider.value;
+        _slider.value = terrainChunkGenerator.width; // Set initial value.
+        _slider.onValueChanged.AddListener(OnClick);
     }
 
-    private void Update()
+    private void OnClick(float sliderValue)
     {
-        float value = _slider.value;
-        if (value != _value)
-        {
-            terrainChunkGenerator.width = (int)_slider.value;
-            _value = value;
-        }
+        terrainChunkGenerator.width = (int)sliderValue;
     }
 }

@@ -1,13 +1,10 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using Unity.Collections;
 using Unity.Jobs;
 using UnityEngine;
 using Unity.Mathematics;
-using UnityEngine.Rendering;
 
-[System.Serializable]
+[Serializable]
 public class TerrainChunkGenerator : MonoBehaviour
 {
     public GameObject nodePrefab;
@@ -78,21 +75,6 @@ public class TerrainChunkGenerator : MonoBehaviour
 
     private GameObject _cameraFocus;
 
-    public void ToggleDrawTerrainNodes(bool drawTerrainNodes)
-    {
-        this.drawTerrainNodes = drawTerrainNodes;
-    }
-    
-    public void ToggleDrawBoundingBox(bool drawBoundingBox)
-    {
-        this.drawBoundingBox = drawBoundingBox;
-    }  
-    
-    public void ToggleDrawMarchingCube(bool drawMarchingCube)
-    {
-        this.drawMarchingCube = drawMarchingCube;
-    }
-    
     private void Start()
     {
         _totalNumNodes = (width + 2) * (height + 2) * (depth + 2);
@@ -358,8 +340,11 @@ public class TerrainChunkGenerator : MonoBehaviour
         // Reset the cube marching if it has finished marching the entire chunk.
         if (_currentMarchingCubeCounter >= _totalNumCubes)
         {
+            // Reset the cube position back to 0.
             _currentMarchingCubeCounter = 0;
-            ToggleMarchingCubesPaused(true);
+            UpdateMarchingCubeCorners(PositionFromIndex(_currentMarchingCubeCounter));
+            
+            pauseGeneration = true;
         }
         
         if (!pauseGeneration)
@@ -395,9 +380,7 @@ public class TerrainChunkGenerator : MonoBehaviour
     {
         if (!generatingTerrain)
         {
-            ToggleMarchingCubesPaused(false);
-            ResetMarchingCubes();
-            
+            pauseGeneration = false;
             generatingTerrain = true;
             GenerateChunkMesh();
             ConstructChunkMesh();
@@ -431,9 +414,14 @@ public class TerrainChunkGenerator : MonoBehaviour
 
     public void ResetMarchingCubes()
     {
+        // Reset generation values.
         _chunkMeshFilter.mesh.Clear();
         generatingTerrain = false;
+        pauseGeneration = true;
         _currentMarchingCubeCounter = 0;
+        
+        // Reset debug cube to the start.
+        UpdateMarchingCubeCorners(PositionFromIndex(_currentMarchingCubeCounter));
     }
     
     private void UpdateBoundingBoxDimensions()
