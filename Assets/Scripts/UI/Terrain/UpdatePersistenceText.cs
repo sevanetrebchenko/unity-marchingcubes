@@ -11,7 +11,7 @@ public class UpdatePersistenceText : MonoBehaviour
     {
         _text = GetComponent<Text>();
         _previousPersistence = terrainChunkGenerator.persistence; // Set initial value.
-        _text.text = "Persistence: " + _previousPersistence.ToString("F3"); // Round to 3 decimal places.
+        _text.text = "Current value: " + _previousPersistence.ToString("F3"); // Round to 3 decimal places.
     }
 
     private void Update()
@@ -21,7 +21,7 @@ public class UpdatePersistenceText : MonoBehaviour
         // Only update text if persistence changed since the last frame.
         if (!Mathf.Approximately(persistence, _previousPersistence))
         {
-            _text.text = "Persistence: " + persistence.ToString("F3"); // Round to 3 decimal places.
+            _text.text = "Current value: " + persistence.ToString("F3"); // Round to 3 decimal places.
             _previousPersistence = persistence;
         }
     }

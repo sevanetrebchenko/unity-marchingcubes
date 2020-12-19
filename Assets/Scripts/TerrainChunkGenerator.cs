@@ -10,13 +10,13 @@ public class TerrainChunkGenerator : MonoBehaviour
     public GameObject nodePrefab;
     
     // Mesh needs to be regenerated if these fields change.
-    [Range(3, 10)] public int width;
+    [Range(2, 20)] public int width;
     private int _width;
     
-    [Range(3, 10)] public int height;
+    [Range(2, 20)] public int height;
     private int _height;
     
-    [Range(3, 10)] public int depth;
+    [Range(2, 20)] public int depth;
     private int _depth;
     
     public uint terrainSeed;

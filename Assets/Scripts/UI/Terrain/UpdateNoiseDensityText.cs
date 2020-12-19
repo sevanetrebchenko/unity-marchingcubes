@@ -11,7 +11,7 @@ public class UpdateNoiseDensityText : MonoBehaviour
     {
         _text = GetComponent<Text>();
         _previousNoiseDensity = terrainChunkGenerator.noiseDensity; // Set initial value.
-        _text.text = "Noise Density: " + _previousNoiseDensity.ToString("F3"); // Round to 3 decimal places.
+        _text.text = "Current value: " + _previousNoiseDensity.ToString("F3"); // Round to 3 decimal places.
     }
 
     private void Update()
@@ -21,7 +21,7 @@ public class UpdateNoiseDensityText : MonoBehaviour
         // Only update text if the noise density changed since the last frame.
         if (!Mathf.Approximately(noiseDensity, _previousNoiseDensity))
         {
-            _text.text = "Noise Density: " + noiseDensity.ToString("F3"); // Round to 3 decimal places.
+            _text.text = "Current value: " + noiseDensity.ToString("F3"); // Round to 3 decimal places.
             _previousNoiseDensity = noiseDensity;
         }
     }

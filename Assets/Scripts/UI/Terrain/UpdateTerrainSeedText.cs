@@ -11,7 +11,7 @@ public class UpdateTerrainSeedText : MonoBehaviour
     {
         _text = GetComponent<Text>();
         _previousSeed = terrainChunkGenerator.terrainSeed; // Set initial value.
-        _text.text = "Terrain Seed: " + _previousSeed.ToString();
+        _text.text = "Current value: " + _previousSeed.ToString();
     }
 
     private void Update()
@@ -21,7 +21,7 @@ public class UpdateTerrainSeedText : MonoBehaviour
         // Only update text if terrain seed changed since the last frame.
         if (terrainSeed != _previousSeed)
         {
-            _text.text = "Terrain Seed: " + terrainSeed.ToString();
+            _text.text = "Current value: " + terrainSeed.ToString();
             _previousSeed = terrainSeed;
         }
     }

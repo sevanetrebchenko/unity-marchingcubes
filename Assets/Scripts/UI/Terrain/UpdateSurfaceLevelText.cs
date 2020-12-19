@@ -11,7 +11,7 @@ public class UpdateSurfaceLevelText : MonoBehaviour
     {
         _text = GetComponent<Text>();
         _previousSurfaceLevel = terrainChunkGenerator.surfaceLevel; // Set initial value.
-        _text.text = "Surface Level: " + _previousSurfaceLevel.ToString("F3"); // Round to 3 decimal places.
+        _text.text = "Current value: " + _previousSurfaceLevel.ToString("F3"); // Round to 3 decimal places.
     }
 
     private void Update()
@@ -21,7 +21,7 @@ public class UpdateSurfaceLevelText : MonoBehaviour
         // Only update text if surface level changed since the last frame.
         if (!Mathf.Approximately(surfaceLevel, _previousSurfaceLevel))
         {
-            _text.text = "Surface Level: " + surfaceLevel.ToString("F3"); // Round to 3 decimal places.
+            _text.text = "Current value: " + surfaceLevel.ToString("F3"); // Round to 3 decimal places.
             _previousSurfaceLevel = surfaceLevel;
         }
     }

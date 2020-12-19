@@ -11,7 +11,7 @@ public class UpdateNoiseOctavesText : MonoBehaviour
     {
         _text = GetComponent<Text>();
         _previousNumNoiseOctaves = terrainChunkGenerator.numNoiseOctaves; // Set initial value.
-        _text.text = "Noise Octaves: " + terrainChunkGenerator.numNoiseOctaves.ToString(); // Set initial value.
+        _text.text = "Current value: " + terrainChunkGenerator.numNoiseOctaves.ToString(); // Set initial value.
     }
 
     private void Update()
@@ -21,7 +21,7 @@ public class UpdateNoiseOctavesText : MonoBehaviour
         // Only update text if the number of noise octaves changed since the last frame.
         if (numNoiseOctaves != _previousNumNoiseOctaves)
         {
-            _text.text = "Noise Octaves: " + numNoiseOctaves.ToString();
+            _text.text = "Current value: " + numNoiseOctaves.ToString();
             _previousNumNoiseOctaves = numNoiseOctaves;
         }
         

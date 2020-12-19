@@ -165,6 +165,14 @@ public struct ChunkMeshGenerationJob : IJob
                             float3 edgeVertex1 = normalizedCubePosition + corner1;
                             float3 edgeVertex2 = normalizedCubePosition + corner2;
 
+                            // For smooth edges:
+                            // float edgeVertex1Noise = cubeCornerValues[edgeTable[edgeVertex1Index]];
+                            // float edgeVertex2Noise = cubeCornerValues[edgeTable[edgeVertex2Index]];
+                            // float3 vertexPosition = Interpolate(edgeVertex1, edgeVertex1Noise, edgeVertex2, edgeVertex2Noise);
+                            //
+                            // // Calculate vertex position.
+                            // vertices[vertexIndex++] = vertexPosition;
+                            
                             // Calculate vertex position.
                             vertices[vertexIndex++] = (edgeVertex1 + edgeVertex2) / 2.0f;
                             ++edgeIndex;

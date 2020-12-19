@@ -11,7 +11,7 @@ public class UpdateLacunarityText : MonoBehaviour
     {
         _text = GetComponent<Text>();
         _previousLacunarity = terrainChunkGenerator.lacunarity; // Set initial value.
-        _text.text = "Lacunarity: " + terrainChunkGenerator.lacunarity.ToString("F3"); // Round to 3 decimal places.
+        _text.text = "Current value: " + terrainChunkGenerator.lacunarity.ToString("F3"); // Round to 3 decimal places.
     }
 
     private void Update()
@@ -20,7 +20,7 @@ public class UpdateLacunarityText : MonoBehaviour
 
         if (!Mathf.Approximately(lacunarity, _previousLacunarity))
         {
-            _text.text = "Lacunarity: " + lacunarity.ToString("F3"); // Round to 3 decimal places.
+            _text.text = "Current value: " + lacunarity.ToString("F3"); // Round to 3 decimal places.
             _previousLacunarity = lacunarity;
         }
         
