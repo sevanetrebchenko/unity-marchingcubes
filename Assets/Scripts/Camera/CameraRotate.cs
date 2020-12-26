@@ -6,14 +6,13 @@ using UnityEngine.UIElements;
 
 public class CameraRotate : MonoBehaviour
 {
-    public GameObject target;
-    public float speed;
-
     private Vector3 _previousMousePosition;
     private float _cutoffAngle;
+    private GameObject _target;
 
     private void Start()
     {
+        _target = GameObject.Find("CameraFocus");
         _previousMousePosition = Input.mousePosition;
         _cutoffAngle = 80.0f;
     }
@@ -23,7 +22,7 @@ public class CameraRotate : MonoBehaviour
         if (Input.GetMouseButton(1))
         {
             Vector3 currentMousePosition = Input.mousePosition;
-            Vector3 targetPosition = target.transform.position;
+            Vector3 targetPosition = _target.transform.position;
             
             // Rotate horizontally.
             transform.RotateAround(targetPosition, Vector3.up, (currentMousePosition.x - _previousMousePosition.x) / 5.0f);

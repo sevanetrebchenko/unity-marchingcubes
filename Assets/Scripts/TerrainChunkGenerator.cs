@@ -229,21 +229,21 @@ public class TerrainChunkGenerator : MonoBehaviour
                 for (int z = 0; z < depth + 2; ++z)
                 {
                     int index = x + z * (width + 2) + y * (width + 2) * (depth + 2);
-                     float noiseValue = _chunkHeightMap[index];
-                     GameObject node = Instantiate(nodePrefab, new Vector3(x, y, z), Quaternion.identity, _nodeParent.transform);
-                     MeshRenderer nodeMeshRenderer = node.GetComponent<MeshRenderer>();
+                    float noiseValue = _chunkHeightMap[index];
+                    GameObject node = Instantiate(nodePrefab, new Vector3(x, y, z), Quaternion.identity, _nodeParent.transform);
+                    MeshRenderer nodeMeshRenderer = node.GetComponent<MeshRenderer>();
 
-                     // Update node color.
-                     if (noiseValue > surfaceLevel)
-                     {
-                         nodeMeshRenderer.material.color = new Color(0.9f, 0.9f, 0.9f);
-                     }
-                     else
-                     {
-                         nodeMeshRenderer.material.color = Color.black;
-                     }
+                    // Update node color.
+                    if (noiseValue > surfaceLevel)
+                    {
+                        nodeMeshRenderer.material.color = new Color(0.9f, 0.9f, 0.9f);
+                    }
+                    else
+                    {
+                        nodeMeshRenderer.material.color = Color.black;
+                    }
 
-                     _nodes[index] = node;
+                    _nodes[index] = node;
                 }
             }
         }

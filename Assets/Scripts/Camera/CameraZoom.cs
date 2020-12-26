@@ -1,13 +1,8 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using UnityEditor;
 using UnityEngine;
 
 public class CameraZoom : MonoBehaviour
 {
     public TerrainChunkGenerator terrainChunkGenerator;
-    public Transform target;
 
     private float _maximumAxis;
     
@@ -21,8 +16,12 @@ public class CameraZoom : MonoBehaviour
     private int _zoomOutElapsedFrames;
     private bool _zoomOutlerping;
 
+    private Transform _target;
+
     private void Start()
     {
+        _target = GameObject.Find("CameraFocus").transform;
+        
         _maximumAxis = Mathf.Max(Mathf.Max(terrainChunkGenerator.width, terrainChunkGenerator.height), terrainChunkGenerator.depth);
         
         _zoomInInterpolationFramesCount = 150; // Number of frames to completely interpolate between the 2 positions.
@@ -47,7 +46,7 @@ public class CameraZoom : MonoBehaviour
         _maximumAxis = Mathf.Max(Mathf.Max(terrainChunkGenerator.width, terrainChunkGenerator.height), terrainChunkGenerator.depth);
         float maximumDistance = _maximumAxis + 25.0f;
         float minimumDistance = _maximumAxis + 5.0f;
-        float distance = Vector3.Distance(position, target.position);
+        float distance = Vector3.Distance(position, _target.position);
         
         // Limit how far you can zoom in.
         // Distance from camera to target is smaller than radius, move camera back to a position where it is not intersecting.

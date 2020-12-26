@@ -12,6 +12,9 @@ public class MarchingCubesController : MonoBehaviour
     
     private Button _resetButton;
     private RectTransform _resetButtonTransform;
+
+    private float _largeSeparation;
+    private float _smallSeparation;
     
     private void Start()
     {
@@ -23,6 +26,9 @@ public class MarchingCubesController : MonoBehaviour
         
         _resetButton = GetChildComponentByName("ResetCubeMarchingButton");
         _resetButtonTransform = _resetButton.GetComponent<RectTransform>();
+
+        _largeSeparation = Mathf.Abs(_startButton.GetComponent<RectTransform>().position.y - _stepForwardButton.GetComponent<RectTransform>().position.y);
+        _smallSeparation = Mathf.Abs(_stepForwardButton.GetComponent<RectTransform>().position.y - _stepBackwardButton.GetComponent<RectTransform>().position.y);
     }
     
     private Button GetChildComponentByName(string name) 
@@ -64,7 +70,7 @@ public class MarchingCubesController : MonoBehaviour
                 _startButton.gameObject.SetActive(false);
                 _resetButton.gameObject.SetActive(false);
 
-                resetButtonRectPosition.y = -67.6f;
+                resetButtonRectPosition.y = -90.0f;
                 _resetButtonTransform.localPosition = resetButtonRectPosition;
             }
             else 
@@ -75,8 +81,8 @@ public class MarchingCubesController : MonoBehaviour
                 _stepForwardButton.gameObject.SetActive(false);
                 _stepBackwardButton.gameObject.SetActive(false);
                 _startButton.gameObject.SetActive(false);
-                
-                resetButtonRectPosition.y = 12.8f;
+
+                resetButtonRectPosition.y = 0.0f;
                 _resetButtonTransform.localPosition = resetButtonRectPosition;
             }
 
