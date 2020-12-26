@@ -8,15 +8,18 @@ public class BoundingBox : MonoBehaviour
     private void OnPostRender()
     {
         // Draw bounding box for entire terrain chunk.
-        if (terrainChunkGenerator.drawBoundingBox)
+        if (terrainChunkGenerator.gameObject.activeSelf)
         {
-            DrawCube(terrainChunkGenerator.boundingBoxCorners);
-        }
+            if (terrainChunkGenerator.drawBoundingBox)
+            {
+                DrawCube(terrainChunkGenerator.boundingBoxCorners);
+            }
 
-        // Draw cube at the current position.
-        if (terrainChunkGenerator.animateCubeMarching && terrainChunkGenerator.drawMarchingCube)
-        {
-            DrawCube(terrainChunkGenerator.marchingCubeCorners);
+            // Draw cube at the current position.
+            if (terrainChunkGenerator.animateCubeMarching && terrainChunkGenerator.drawMarchingCube)
+            {
+                DrawCube(terrainChunkGenerator.marchingCubeCorners);
+            }
         }
     }
 

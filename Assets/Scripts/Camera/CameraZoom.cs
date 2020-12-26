@@ -3,6 +3,7 @@ using UnityEngine;
 public class CameraZoom : MonoBehaviour
 {
     public TerrainChunkGenerator terrainChunkGenerator;
+    public Cube cubeGenerator;
 
     private float _maximumAxis;
     
@@ -22,7 +23,7 @@ public class CameraZoom : MonoBehaviour
     {
         _target = GameObject.Find("CameraFocus").transform;
         
-        _maximumAxis = Mathf.Max(Mathf.Max(terrainChunkGenerator.width, terrainChunkGenerator.height), terrainChunkGenerator.depth);
+        _maximumAxis = terrainChunkGenerator.gameObject.activeSelf ? Mathf.Max(Mathf.Max(terrainChunkGenerator.width, terrainChunkGenerator.height), terrainChunkGenerator.depth) : cubeGenerator.nodeDistance;
         
         _zoomInInterpolationFramesCount = 150; // Number of frames to completely interpolate between the 2 positions.
         _zoomInElapsedFrames = 0;
@@ -43,7 +44,8 @@ public class CameraZoom : MonoBehaviour
             position += forward * Input.mouseScrollDelta.y;
         }
         
-        _maximumAxis = Mathf.Max(Mathf.Max(terrainChunkGenerator.width, terrainChunkGenerator.height), terrainChunkGenerator.depth);
+        _maximumAxis = terrainChunkGenerator.gameObject.activeSelf ? Mathf.Max(Mathf.Max(terrainChunkGenerator.width, terrainChunkGenerator.height), terrainChunkGenerator.depth) : cubeGenerator.nodeDistance;
+
         float maximumDistance = _maximumAxis + 25.0f;
         float minimumDistance = _maximumAxis + 5.0f;
         float distance = Vector3.Distance(position, _target.position);
